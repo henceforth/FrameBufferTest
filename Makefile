@@ -1,4 +1,4 @@
-OFILE = frambuffer
+OFILE = framebuffer
 IFILE = framebuffer.c
 LINKS = -lm -Wall
 
@@ -8,11 +8,11 @@ all: framebuffer.c
 run: all
 	./${OFILE}
 
-git:
+git: all clean
 	git add ${IFILE} Makefile
 	git commit
 
-gitLog:
+gitl:
 	git log
 
 clean:
