@@ -12,6 +12,9 @@ git:
 	git add ${IFILE} Makefile
 	git commit
 
+gitLog:
+	git log
+
 clean:
 	rm -f ${OFILE}
 
