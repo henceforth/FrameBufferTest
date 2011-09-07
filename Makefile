@@ -1,35 +1,41 @@
+#file stuff, for gcc, git, clean...
 FBOFILE = framebuffer
 FBIFILE = framebuffer.c
 
 MBIFILE = mouse.c
 MBOFILE = mouse
 
+CFILES = mouse.c framebuffer.c
+HEADERFILES = mouse.h framebuffer.h
+MISCFILES = Makefile Session.vim
+
+#Compiler/Linker stuff
 GLOBAL_LINKS = 
 FLAGS = -Wall -g
 
-#clean and compile all
-all: framebuffer mouse tags clean
-	${CC} ${GLOBAL_LINKS} ${FLAGS} -o ${FBOFILE} ${FBIFILE} 
+CC = gcc
 
-#tag list
-tags: ${FBIFILE} ${Makefile} ${MBIFILE}
-	ctags .
+#clean and compile all
+all: framebuffer mouse clean
+#	${CC} ${GLOBAL_LINKS} ${FLAGS} -o ${FBOFILE} ${FBIFILE} 
+	echo "rebuild it all"
+
 
 #make all and run framebuffer
 run: all
 	./${FBOFILE}
 
 #compile framebuffer only
-framebuffer: ${FBIFILE} clean
-	${CC} ${GLOBAL_LINKS} ${FLAGS} -o ${FBOFILE} ${FBIFILE} 
+#framebuffer: ${FBIFILE} clean
+#	${CC} ${GLOBAL_LINKS} ${FLAGS} -o ${FBOFILE} ${FBIFILE} 
 
 #compile ${MBIFILE} only
 mouse: ${MBIFILE} clean
-	${CC} -o ${MBOFILE} ${FLAGS} ${MBIFILE} -lrt
+	${CC} ${GLOBAL_LINKS} ${FLAGS} -o ${MBOFILE} ${MBIFILE} -lrt
 
 #git commit
 git: clean all
-	git add ${FBIFILE} ${MBIFILE} Makefile Session.vim
+	git add ${CFILES} ${HEADERFILES} ${MISCFILES} 
 	git commit
 
 #git show log
@@ -41,5 +47,8 @@ clean:
 	rm -f ${FBOFILE} ${MBOFILE}
 
 #start debugger for framebuffer
-debug: framebuffer 
+debugf: framebuffer 
 	gdb ${FBOFILE}
+
+debugm: mouse
+	gdb ${MBOFILE}

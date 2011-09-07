@@ -1,48 +1,103 @@
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <aio.h>
-#include <unistd.h>
+#include "mouse.h"
 
-#define BUFSIZE 5
-#define DEVICE_TO_OPEN "/dev/psaux"
+static int mfh; //mouse file handle (device file)
+static char* buffer; //mouse buffer
+static struct aiocb cb; //async struct
+
+
 
 int main(void){
-	if(BUFSIZE <= 0){
-		printf("invalid buffer size!\n");
-		return 4;
+	if(openAndAllocateMouse() != 0){
+		exit(1);
+	}
+	pollMouse();
+	closeMouse();
+	return 0;
+
+}
+
+struct mouseMove* processMouseInput(void){
+	//only call when certain, that there is mouse data
+	
+	struct mouseMove mmove;
+	//struct mouseMove* mmove = (struct mouseMove)malloc(sizeof(struct mouseMove));
+
+	mmove.buttonPressed = 0;
+	mmove.offsetX = *(buffer+1);
+	mmove.offsetY = *(buffer+2);
+	int currentByte = *(buffer);
+	
+
+	if((currentByte & 1) != 0){
+		//left
+		printf("LB pressed\n");
+		mmove.buttonPressed = mmove.buttonPressed | LBUTTON; 
+	}
+
+
+	if((currentByte & 2) != 0){
+		//right
+		printf("RB pressed\n");
+		mmove.buttonPressed = mmove.buttonPressed | RBUTTON; 
+
+	}
+
+	if((currentByte & 4) != 0){
+		//middle
+		printf("MB pressed\n");
+		mmove.buttonPressed = mmove.buttonPressed | MBUTTON; 
+	}
+
+	if((currentByte & 8) != 8){
+		//always set	
+		printf("ERROR!\n");
+	}
+
+	if((currentByte & 16) != 0){
+		printf("X sign\n");
+		mmove.offsetX = (~(++mmove.offsetX))*-1;
+	}
+
+	if((currentByte & 32) != 0){
+		printf("Y sign\n");
+		mmove.offsetY = (~(++mmove.offsetY))*-1;
 	}
 	
-	int mfh = open(DEVICE_TO_OPEN, O_RDONLY);
-	if(mfh == 0){
-		printf("couldnt open %s\n", DEVICE_TO_OPEN);
-		return 1;
-	}
-
-	char* buffer = (char*)malloc(BUFSIZE);
-	if(buffer == NULL){
-		printf("couldnt allocate buffer\n");
-		return 2;
-	}
-	memset(buffer, 0, BUFSIZE);
 	
-	struct aiocb cb;
-	memset(&cb, 0, sizeof(struct aiocb));
+	/**
+	//ignore mouse overflow
+	if((currentByte & 64) != 0){
+		//ignored
+		printf("X overflow\n");
+	}
 
-	cb.aio_fildes = mfh;
-	cb.aio_offset = 0;
-	cb.aio_buf = buffer;
-	cb.aio_nbytes = BUFSIZE;
+	if((currentByte & 128) != 0){
+		//ignored
+		printf("Y overflow\n");
+	}**/
 
+
+	//MUST BE FREED!!!!!
+	struct mouseMove* pmmove = NULL;
+	pmmove = (struct mouseMove*)malloc(sizeof(struct mouseMove));
+	if(pmmove != NULL){
+		memcpy(pmmove, &mmove, sizeof(struct mouseMove));
+		return pmmove;
+	}
+
+	return NULL;
+
+}
+
+int pollMouse(){
 	int aio_ret = 0;
 
 	while(1==1){
 		aio_ret = aio_read(&cb);
+	
 		do{	
 			aio_ret = aio_error(&cb);
 			if(aio_ret == 0){ //read succesfull
-				printf("\n");
 				break;
 			}else if(aio_ret == EINPROGRESS){ //read in progress
 			}else{ //error
@@ -53,17 +108,46 @@ int main(void){
 
 		aio_ret = aio_return(&cb);
 		if(aio_ret >= 0){
-			int i = 0;
-			for(i = 0; i < aio_ret; i++){
-				printf("%8X ", *(buffer+i));
-			}
+			struct mouseMove* pmouse = processMouseInput();
 		}else{
-			printf("return returned %i\n", aio_ret);
+			printf("aio_return error! returned value: %i\n", aio_ret);
 		}
 	}
+	return 0;
+}
+
+int openAndAllocateMouse(void){
+	mfh = 0;
+	buffer = NULL;
+	
+	if(BUFSIZE <= 0){
+		printf("invalid buffer size!\n");
+		return 4;
+	}
+	
+	mfh = open(DEVICE_TO_OPEN, O_RDONLY);
+	if(mfh == 0){
+		printf("couldnt open %s\n", DEVICE_TO_OPEN);
+		return 1;
+	}
+
+	buffer = (char*)malloc(BUFSIZE);
+	if(buffer == NULL){
+		printf("couldnt allocate buffer\n");
+		return 2;
+	}
+
+	memset(buffer, 0, BUFSIZE);
+	memset(&cb, 0, sizeof(struct aiocb));
+
+	cb.aio_fildes = mfh;
+	cb.aio_offset = 0;
+	cb.aio_buf = buffer;
+	cb.aio_nbytes = BUFSIZE;
+	return 0;
+}
+void closeMouse(void){
 	close(mfh);
 	free(buffer);
-
-	return 0;
-
 }
+

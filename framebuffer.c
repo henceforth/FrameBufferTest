@@ -1,15 +1,4 @@
-#include <unistd.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <linux/fb.h>
-#include <sys/mman.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/time.h>
-
-#define XSTART 100
-#define YSTART 100
+#include "framebuffer.h"
 
 //variable screen info
 static struct fb_var_screeninfo vinfo;
@@ -22,24 +11,14 @@ static char *fbp = 0;
 //mapped background buffer
 static char* bgp = 0;
 
+//dbg stuff
 static long int screensize = 0;
 static int picsDrawn = 0;
 static long int totalMicroseconds = 0;
 struct timeval start, end;
+//dbg end
 
-//setup
-int openFramebuffer(void);
-int getScreensizeInByte(void);
 int allocateBuffer();
-
-//public
-int setPixel(int x, int y, int red, int blue, int green);
-int swapBuffers(void);
-
-//debug
-int printDebug(void);
-void tick(void);
-void setTimer(void);
 
 int main()
 {
@@ -80,7 +59,7 @@ int main()
 			x = 0;
 			
 			//dbg start	
-			tick();
+			tick(); //restarts timer
 			//dbg end
 			
 			
@@ -95,7 +74,7 @@ int main()
 
 int openFramebuffer(void){
         /* Open the file for reading and writing */
-        fbfd = open("/dev/fb0", O_RDWR);
+        fbfd = open(DEVICE_FILE, O_RDWR);
         if (!fbfd) {
                 printf("Error: cannot open framebuffer device.\n");
                 exit(1);
