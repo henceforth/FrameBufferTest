@@ -1,17 +1,23 @@
 OFILE = framebuffer
 IFILE = framebuffer.c
-LINKS = -lm -Wall
 
-all: framebuffer.c clean
-	gcc ${LINKS} -o ${OFILE} ${IFILE} 
+MIFILE = mouse.c
+MOFILE = mouse
+
+LINKS = 
+FLAGS = -Wall -g
+
+all: framebuffer mouse clean
+	${CC} ${LINKS} ${FLAGS} -o ${OFILE} ${IFILE} 
 
 run: all
 	./${OFILE}
 
-MIFILE = mouse.c
-MOFILE = mouse
+framebuffer: framebuffer.c clean
+	${CC} ${LINKS} ${FLAGS} -o ${OFILE} ${IFILE} 
+
 mouse: mouse.c clean
-	gcc -g -o ${MOFILE} ${MIFILE} -lrt
+	${CC} -o ${MOFILE} ${FLAGS} ${MIFILE} -lrt
 
 git: clean all
 	git add ${IFILE} ${MIFILE} Makefile
@@ -24,5 +30,5 @@ clean:
 	rm -f ${OFILE} ${MOFILE}
 
 debug: framebuffer.c
-	gcc -g ${LINKS} -o ${OFILE} ${IFILE}
+	${CC} -g ${LINKS} -o ${OFILE} ${IFILE}
 	gdb ${OFILE}
