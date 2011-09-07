@@ -7,16 +7,20 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
-
+#include <linux/kd.h>
+#include <errno.h>
 //public access
 int openFramebuffer(void);
 int getScreensizeInByte(void);
 int setPixel(int x, int y, int red, int blue, int green);
 int swapBuffers(void);
+void closeFramebuffer();
+int getGraphicMode();
 
 //dbg
 int printDebug(void);
 void tick(void);
 void setTimer(void);
 
-#define DEVICE_FILE "/dev/fb0"
+#define CONSOLE_DEVICE_FILE "/dev/console"
+#define VIDEO_DEVICE_FILE "/dev/fb0"

@@ -26,8 +26,8 @@ run: all
 	./${FBOFILE}
 
 #compile framebuffer only
-#framebuffer: ${FBIFILE} clean
-#	${CC} ${GLOBAL_LINKS} ${FLAGS} -o ${FBOFILE} ${FBIFILE} 
+framebuffer: ${FBIFILE} clean
+	${CC} ${GLOBAL_LINKS} ${FLAGS} -o ${FBOFILE} ${FBIFILE} 
 
 #compile ${MBIFILE} only
 mouse: ${MBIFILE} clean

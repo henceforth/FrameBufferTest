@@ -19,7 +19,6 @@ struct timeval start, end;
 //dbg end
 
 int allocateBuffer();
-
 int main()
 {
         int x = 0, y = 0;
@@ -61,20 +60,57 @@ int main()
 			//dbg start	
 			tick(); //restarts timer
 			//dbg end
-			
-			
 		}
 	}	
-       printf("total pics: %i, total time: %li average: %f\n", picsDrawn, totalMicroseconds, (float)totalMicroseconds/picsDrawn); 
+	closeFramebuffer();
+	printf("total pics: %i, total time: %li average: %f\n", picsDrawn, totalMicroseconds, (float)totalMicroseconds/picsDrawn); 
+	return 0;
+}
+
+void closeFramebuffer(void){
+
+	//get console device
+
+	int tbfd = open(CONSOLE_DEVICE_FILE, O_RDWR);
+
+	if(tbfd == -1){
+		printf("failed to open console device, error: %i\n", errno);
+	}else{	
+		if(ioctl(tbfd, KDSETMODE, KD_TEXT) == -1){
+			printf("failed to set text mode, errno: %i\n", errno);
+		}
+	}
 	munmap(fbp, screensize);
 	free(bgp);
 	close(fbfd);
-        return 0;
+	close(tbfd);
+}
+
+int getGraphicMode(){
+	long int result = 0;
+	if(ioctl(fbfd, KDGETMODE, &result) != -1){
+		return result;
+	}
+	return -1;
+	
+}
+
+int setupGraphicsMode(void){
+
+	if(ioctl(fbfd, KDSETMODE, 1) == -1){
+		printf("failed to set graphics mode\n");
+		exit(1);
+	}
+
+	return 0;
+
 }
 
 int openFramebuffer(void){
-        /* Open the file for reading and writing */
-        fbfd = open(DEVICE_FILE, O_RDWR);
+	setupGraphicsMode();
+
+	/* Open the file for reading and writing */
+        fbfd = open(VIDEO_DEVICE_FILE, O_RDWR);
         if (!fbfd) {
                 printf("Error: cannot open framebuffer device.\n");
                 exit(1);
