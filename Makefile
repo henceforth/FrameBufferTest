@@ -16,8 +16,8 @@ tags: ${FBIFILE} ${Makefile} ${MBIFILE}
 	ctags .
 
 #make all and run framebuffer
-#run: all
-#	./${FBOFILE}
+run: all
+	./${FBOFILE}
 
 #compile framebuffer only
 framebuffer: ${FBIFILE} clean

@@ -23,68 +23,49 @@ static char *fbp = 0;
 static char* bgp = 0;
 
 static long int screensize = 0;
+static int picsDrawn = 0;
+static long int totalMicroseconds = 0;
+struct timeval start, end;
+
+//setup
 int openFramebuffer(void);
 int getScreensizeInByte(void);
+int allocateBuffer();
+
+//public
+int setPixel(int x, int y, int red, int blue, int green);
 int swapBuffers(void);
 
+//debug
+int printDebug(void);
+void tick(void);
+void setTimer(void);
 
 int main()
 {
         int x = 0, y = 0;
-	long int location = 0;
+	int green = 0, red = 0, blue = 0;
 	
 	openFramebuffer();
-
-	printf("Screen Information:\n");
-	printf("x resolution: %i\n", vinfo.xres);
-	printf("y resolution: %i\n", vinfo.yres);
-
-        /* Map the device to memory */
-        fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);       
-        
-	if ((int)fbp == -1) { 
-		printf("Error: failed to map framebuffer device to memory.\n"); 
-		exit(4);
-        }
-	
-	/* Allocate background buffer */
-	bgp = (char*)malloc(screensize);
-
-	if(bgp == NULL){
-		printf("failed to allocate background buffer, requested size: %li byte\n", screensize);
-	}
-
-	
-	int green = 0, red = 0, blue = 0;
-	int i;
+	allocateBuffer();
 	
 	//dbg start
-	int picsDrawn = 0;
-	long int totalMicroseconds = 0;
-	struct timeval start, end;
-	gettimeofday(&start, NULL);
+	printDebug();
+	setTimer();
 	//dbg end
 
+	int i = 0;
 	for(i = 0; i < vinfo.xres; i++){
 		/* Figure out where in memory to put the pixel */
-		//creationTime = time(0);
-		location = (x * vinfo.bits_per_pixel/8) + (y * finfo.line_length);
+		setPixel(x, y, red, green, blue);	
 		x += 1;
-
-		/* layout: BGRA, strange endianess */
-		/* write to background buffer */
-		*(bgp + location) = blue;	
-		*(bgp + location + 1) = green; 
-		*(bgp + location + 2) = red;  
-		*(bgp + location + 3) = 0;   
 		
-		if(/*x == 0 ||*/ x == vinfo.xres-1){
+		if(x == vinfo.xres-1){
 			//x reached outter x
 			x = 0;
 			i = 0;
 			y += 1;
 		}
-
 
 		if(y == vinfo.yres-1){
 			swapBuffers();
@@ -99,16 +80,9 @@ int main()
 			x = 0;
 			
 			//dbg start	
-				gettimeofday(&end, NULL);
-				picsDrawn++;
-				if(end.tv_usec - start.tv_usec > 0){
-					totalMicroseconds += end.tv_usec - start.tv_usec;
-				}else{
-					totalMicroseconds += (end.tv_sec - start.tv_sec + ((end.tv_usec - start.tv_usec)>>6));
-				}
+			tick();
 			//dbg end
 			
-			gettimeofday(&start, NULL);
 			
 		}
 	}	
@@ -150,5 +124,59 @@ int swapBuffers(void){
 	memcpy(fbp, bgp, screensize);
 	return 0;
 	
+}
+
+int printDebug(void){
+	printf("Screen Information:\n");
+	printf("x resolution: %i\n", vinfo.xres);
+	printf("y resolution: %i\n", vinfo.yres);
+	return 0;
+}
+
+void setTimer(void){
+	gettimeofday(&start, NULL);
+}
+
+void tick(void){
+	gettimeofday(&end, NULL);
+	picsDrawn++;
+	if(end.tv_usec - start.tv_usec > 0){
+		totalMicroseconds += end.tv_usec - start.tv_usec;
+	}else{
+		totalMicroseconds += (end.tv_sec - start.tv_sec + ((end.tv_usec - start.tv_usec)>>6));
+	}
+	setTimer();	
+}
+
+int allocateBuffer(){
+        /* Map the device to memory */
+        fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);       
+        
+	if ((int)fbp == -1) { 
+		printf("Error: failed to map framebuffer device to memory.\n"); 
+		exit(4);
+        }
+	
+	/* Allocate background buffer */
+	bgp = (char*)malloc(screensize);
+
+	if(bgp == NULL){
+		printf("failed to allocate background buffer, requested size: %li byte\n", screensize);
+		exit(5);
+	}
+	return 0;
+}
+
+int setPixel(x, y, red, blue, green){
+	long int location = (x * vinfo.bits_per_pixel/8) + (y * finfo.line_length);
+
+	/* layout: BGRA, strange endianess */
+	/* write to background buffer */
+	*(bgp + location) = blue;	
+	*(bgp + location + 1) = green; 
+	*(bgp + location + 2) = red;  
+	*(bgp + location + 3) = 0;   
+	
+	return 0;
 }
 
