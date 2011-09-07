@@ -1,34 +1,41 @@
-OFILE = framebuffer
-IFILE = framebuffer.c
+FBOFILE = framebuffer
+FBIFILE = framebuffer.c
 
-MIFILE = mouse.c
-MOFILE = mouse
+MFBIFILE = mouse.c
+MFBOFILE = mouse
 
-LINKS = 
+GLOBAL_LINKS = 
 FLAGS = -Wall -g
 
+#clean and compile all
 all: framebuffer mouse clean
-	${CC} ${LINKS} ${FLAGS} -o ${OFILE} ${IFILE} 
+	${CC} ${GLOBAL_LINKS} ${FLAGS} -o ${FBOFILE} ${FBIFILE} 
 
+#make all and run framebuffer
 run: all
-	./${OFILE}
+	./${FBOFILE}
 
+#compile framebuffer only
 framebuffer: framebuffer.c clean
-	${CC} ${LINKS} ${FLAGS} -o ${OFILE} ${IFILE} 
+	${CC} ${GLOBAL_LINKS} ${FLAGS} -o ${FBOFILE} ${FBIFILE} 
 
+#compile mouse only
 mouse: mouse.c clean
-	${CC} -o ${MOFILE} ${FLAGS} ${MIFILE} -lrt
+	${CC} -o ${MFBOFILE} ${FLAGS} ${MFBIFILE} -lrt
 
+#git commit
 git: clean all
-	git add ${IFILE} ${MIFILE} Makefile
+	git add ${FBIFILE} ${MFBIFILE} Makefile
 	git commit
 
+#git show log
 gitl:
 	git log
 
+#remove output files
 clean:
-	rm -f ${OFILE} ${MOFILE}
+	rm -f ${FBOFILE} ${MFBOFILE}
 
-debug: framebuffer.c
-	${CC} -g ${LINKS} -o ${OFILE} ${IFILE}
-	gdb ${OFILE}
+#start debugger for framebuffer
+debug: framebuffer 
+	gdb ${FBOFILE}

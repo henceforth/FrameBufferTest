@@ -4,15 +4,19 @@
 #include <stdio.h>
 #include <aio.h>
 #include <unistd.h>
-#define BUFSIZE 5
 
+#define BUFSIZE 5
+#define DEVICE_TO_OPEN "/dev/psaux"
 
 int main(void){
-	printf("started!\n");
-
-	int mfh = open("/dev/psaux", O_RDONLY);
+	if(BUFSIZE <= 0){
+		printf("invalid buffer size!\n");
+		return 4;
+	}
+	
+	int mfh = open(DEVICE_TO_OPEN, O_RDONLY);
 	if(mfh == 0){
-		printf("couldnt open /dev/psaux\n");
+		printf("couldnt open %s\n", DEVICE_TO_OPEN);
 		return 1;
 	}
 
@@ -35,19 +39,17 @@ int main(void){
 
 	while(1==1){
 		aio_ret = aio_read(&cb);
-
 		do{	
 			aio_ret = aio_error(&cb);
 			if(aio_ret == 0){ //read succesfull
 				printf("\n");
 				break;
 			}else if(aio_ret == EINPROGRESS){ //read in progress
-				sleep(1);
 			}else{ //error
 				printf("read error!\n");
 				return 3;
 			}
-		}while(aio_ret == EINPROGRESS);
+		}while(aio_ret == EINPROGRESS);//statt EINPROGRESS wait asynchrones verhalten
 
 		aio_ret = aio_return(&cb);
 		if(aio_ret >= 0){
