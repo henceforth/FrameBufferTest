@@ -1,31 +1,35 @@
 FBOFILE = framebuffer
 FBIFILE = framebuffer.c
 
-MFBIFILE = mouse.c
-MFBOFILE = mouse
+MBIFILE = mouse.c
+MBOFILE = mouse
 
 GLOBAL_LINKS = 
 FLAGS = -Wall -g
 
 #clean and compile all
-all: framebuffer mouse clean
+all: framebuffer mouse tags clean
 	${CC} ${GLOBAL_LINKS} ${FLAGS} -o ${FBOFILE} ${FBIFILE} 
+
+#tag list
+tags: ${FBIFILE} ${Makefile} ${MBIFILE}
+	ctags .
 
 #make all and run framebuffer
-run: all
-	./${FBOFILE}
+#run: all
+#	./${FBOFILE}
 
 #compile framebuffer only
-framebuffer: framebuffer.c clean
+framebuffer: ${FBIFILE} clean
 	${CC} ${GLOBAL_LINKS} ${FLAGS} -o ${FBOFILE} ${FBIFILE} 
 
-#compile mouse only
-mouse: mouse.c clean
-	${CC} -o ${MFBOFILE} ${FLAGS} ${MFBIFILE} -lrt
+#compile ${MBIFILE} only
+mouse: ${MBIFILE} clean
+	${CC} -o ${MBOFILE} ${FLAGS} ${MBIFILE} -lrt
 
 #git commit
 git: clean all
-	git add ${FBIFILE} ${MFBIFILE} Makefile
+	git add ${FBIFILE} ${MBIFILE} Makefile Session.vim
 	git commit
 
 #git show log
@@ -34,7 +38,7 @@ gitl:
 
 #remove output files
 clean:
-	rm -f ${FBOFILE} ${MFBOFILE}
+	rm -f ${FBOFILE} ${MBOFILE}
 
 #start debugger for framebuffer
 debug: framebuffer 
