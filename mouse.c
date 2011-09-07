@@ -4,24 +4,56 @@ static int mfh; //mouse file handle (device file)
 static char* buffer; //mouse buffer
 static struct aiocb cb; //async struct
 
-
+struct mouseMove* processMouseInput(void);
 
 int main(void){
 	if(openAndAllocateMouse() != 0){
 		exit(1);
 	}
-	pollMouse();
+
+	int i = 0;
+	while(i < 255){
+		struct mouseMove* mmove = pollMouse();
+		if(mmove == NULL)
+			exit(1);
+
+		if(mmove->offsetX != 0 || mmove->offsetY != 0){
+			printf("mouse was moved!\nwas moved x: %i\nwas moved y: %i\n", mmove->offsetX, mmove->offsetY);
+		}else{
+			printf("mouse wasn't moved\n");
+		}
+
+		if(mmove->buttonPressed != 0){
+			printf("Buttons pressed: ");
+			if((mmove->buttonPressed & LBUTTON) != 0){
+				printf("L ");
+			}
+			if((mmove->buttonPressed & RBUTTON) != 0){
+				printf("R ");
+			}
+			if((mmove->buttonPressed & MBUTTON) != 0){
+				printf("M ");
+			}
+			printf("\n");
+
+		}else{
+			printf("no buttons were pressed\n");
+		}
+		printf("\n");
+		i++;
+	}
 	closeMouse();
 	return 0;
 
 }
 
 struct mouseMove* processMouseInput(void){
-	//only call when certain, that there is mouse data
-	
-	struct mouseMove mmove;
-	//struct mouseMove* mmove = (struct mouseMove)malloc(sizeof(struct mouseMove));
+	//only call when certain there is mouse data in the buffer
 
+	if(buffer == NULL)
+		return NULL;
+
+	struct mouseMove mmove;
 	mmove.buttonPressed = 0;
 	mmove.offsetX = *(buffer+1);
 	mmove.offsetY = *(buffer+2);
@@ -30,21 +62,18 @@ struct mouseMove* processMouseInput(void){
 
 	if((currentByte & 1) != 0){
 		//left
-		printf("LB pressed\n");
 		mmove.buttonPressed = mmove.buttonPressed | LBUTTON; 
 	}
 
 
 	if((currentByte & 2) != 0){
 		//right
-		printf("RB pressed\n");
 		mmove.buttonPressed = mmove.buttonPressed | RBUTTON; 
 
 	}
 
 	if((currentByte & 4) != 0){
 		//middle
-		printf("MB pressed\n");
 		mmove.buttonPressed = mmove.buttonPressed | MBUTTON; 
 	}
 
@@ -54,13 +83,16 @@ struct mouseMove* processMouseInput(void){
 	}
 
 	if((currentByte & 16) != 0){
-		printf("X sign\n");
-		mmove.offsetX = (~(++mmove.offsetX))*-1;
+		//mmove.offsetX = (~(++mmove.offsetX))*-1;
+		mmove.offsetX += 1;
+		mmove.offsetX = ~mmove.offsetX;
+		mmove.offsetX *= -1;
 	}
 
 	if((currentByte & 32) != 0){
-		printf("Y sign\n");
-		mmove.offsetY = (~(++mmove.offsetY))*-1;
+		mmove.offsetY += 1;
+		mmove.offsetY = ~mmove.offsetY;
+		mmove.offsetY *= -1;
 	}
 	
 	
@@ -89,31 +121,30 @@ struct mouseMove* processMouseInput(void){
 
 }
 
-int pollMouse(){
+struct mouseMove* pollMouse(){
 	int aio_ret = 0;
+	struct mouseMove* pMouse = NULL;
+	aio_ret = aio_read(&cb);
 
-	while(1==1){
-		aio_ret = aio_read(&cb);
-	
-		do{	
-			aio_ret = aio_error(&cb);
-			if(aio_ret == 0){ //read succesfull
-				break;
-			}else if(aio_ret == EINPROGRESS){ //read in progress
-			}else{ //error
-				printf("read error!\n");
-				return 3;
-			}
-		}while(aio_ret == EINPROGRESS);//statt EINPROGRESS wait asynchrones verhalten
-
-		aio_ret = aio_return(&cb);
-		if(aio_ret >= 0){
-			struct mouseMove* pmouse = processMouseInput();
-		}else{
-			printf("aio_return error! returned value: %i\n", aio_ret);
+	do{	
+		aio_ret = aio_error(&cb);
+		if(aio_ret == 0){ //read succesfull
+			break;
+		}else if(aio_ret == EINPROGRESS){ //read in progress
+		}else{ //error
+			printf("read error!\n");
+			return NULL;
 		}
+	}while(aio_ret == EINPROGRESS);
+
+	aio_ret = aio_return(&cb);
+	if(aio_ret >= 0){
+		pMouse = processMouseInput();
+	}else{
+		printf("aio_return error! returned value: %i\n", aio_ret);
+		return NULL;
 	}
-	return 0;
+	return pMouse;
 }
 
 int openAndAllocateMouse(void){
