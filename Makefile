@@ -1,7 +1,7 @@
 #file stuff, for gcc, git, clean...
 CFILES = mouse.c framebuffer.c client.c
 HEADERFILES = mouse.h framebuffer.h client.h
-MISCFILES = Makefile Session.vim #included in git
+MISCFILES = Makefile #included in git
 OUTFILE = client
 
 #Compiler/Linker stuff
@@ -13,7 +13,7 @@ client: client.c mouse.o framebuffer.o
 	${CC} ${FLAGS} ${GLOBAL_LINKS} -o ${OUTFILE} client.c *.o 
 
 %.o: %.c
-	${CC} ${FLAGS} -g -o $@ -c $<
+	${CC} ${FLAGS} ${DEBUG_FLAGS} -o $@ -c $<
 
 #remove output files
 clean:

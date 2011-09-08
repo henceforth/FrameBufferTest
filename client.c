@@ -4,8 +4,6 @@
 #include <signal.h>
 
 
-#define XMAX 1024
-#define YMAX 768
 
 void openAll();
 void closeAll();
@@ -15,17 +13,14 @@ int main(void){
 
 	signal(SIGINT, closeAll);
 	signal(SIGTERM, closeAll);
+	const int XMAX = getMaxX();
+	const int YMAX = getMaxY();
 
 	openAll();
 
 	struct mouseMove* mmove;
-
-	int red = 0;
-	int green = 0;
-	int blue = 255;
-
-	int j = 0;
-	int i = 0;
+	int red = 0, green = 0, blue = 255;
+	int j = 0, i = 0;
 
 	for(j = 0; j< XMAX; j++){
 		for(i = 0; i < YMAX; i++){
@@ -33,11 +28,8 @@ int main(void){
 		}
 	}
 
-	int x = XMAX/2;
-	int y = YMAX/2;
-	red = 0;
-	green = 0;
-	blue = 0;
+	int x = XMAX/2, y = YMAX/2;
+	red = 0, green = 0, blue = 0;
 	setTimer();
 	while(1==1){
 		tick();
@@ -93,5 +85,5 @@ void openAll(){
 void closeAll(){
 	closeFramebuffer();
 	closeMouse();
-	exit(0);
+	exit(0);//or the signal handler will return
 }

@@ -71,7 +71,7 @@ int openFramebuffer(void){
 	**/
 	
 	//comment out to display dbg messages
-	//setupGraphicsMode();
+	setupGraphicsMode();
 
 	/* Open the file for reading and writing */
         fbfd = open(VIDEO_DEVICE_FILE, O_RDWR);

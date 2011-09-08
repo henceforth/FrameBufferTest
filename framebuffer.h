@@ -34,8 +34,9 @@ int getMaxY();
 int printDebug(void);
 void tick(void);
 void setTimer(void);
-static int picsDrawn;
-static long int totalMicroseconds;
+
+int picsDrawn;
+long int totalMicroseconds;
 struct timeval start, end;
 #endif
 
