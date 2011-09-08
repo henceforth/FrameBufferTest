@@ -6,47 +6,6 @@ static struct aiocb cb; //async struct
 
 struct mouseMove* processMouseInput(void);
 
-int main(void){
-	if(openAndAllocateMouse() != 0){
-		exit(1);
-	}
-
-	int i = 0;
-	while(i < 255){
-		struct mouseMove* mmove = pollMouse();
-		if(mmove == NULL)
-			exit(1);
-
-		if(mmove->offsetX != 0 || mmove->offsetY != 0){
-			printf("mouse was moved!\nwas moved x: %i\nwas moved y: %i\n", mmove->offsetX, mmove->offsetY);
-		}else{
-			printf("mouse wasn't moved\n");
-		}
-
-		if(mmove->buttonPressed != 0){
-			printf("Buttons pressed: ");
-			if((mmove->buttonPressed & LBUTTON) != 0){
-				printf("L ");
-			}
-			if((mmove->buttonPressed & RBUTTON) != 0){
-				printf("R ");
-			}
-			if((mmove->buttonPressed & MBUTTON) != 0){
-				printf("M ");
-			}
-			printf("\n");
-
-		}else{
-			printf("no buttons were pressed\n");
-		}
-		printf("\n");
-		i++;
-	}
-	closeMouse();
-	return 0;
-
-}
-
 struct mouseMove* processMouseInput(void){
 	//only call when certain there is mouse data in the buffer
 

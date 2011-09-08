@@ -14,59 +14,6 @@ static long int screensize;
 
 int allocateBuffer();
 
-int main()
-{
-        int x = 0, y = 0;
-	int green = 0, red = 0, blue = 0;
-	
-	openFramebuffer();
-	allocateBuffer();
-	
-	//dbg start
-#ifdef _DEBUG
-	printDebug();
-	setTimer();
-#endif
-	//dbg end
-
-	int i = 0;
-	for(i = 0; i < vinfo.xres; i++){
-		/* Figure out where in memory to put the pixel */
-		setPixel(x, y, red, green, blue);	
-		x++;
-		
-		if(x == vinfo.xres-1){
-			//x reached outter x
-			x = 0;
-			i = 0;
-			y += 1;
-		}
-
-		if(y == vinfo.yres-1){
-			swapBuffers();
-
-			/* switch if we reach max y */
-			if(red == 255)
-				break;
-			else
-				red += 5;
-
-			y = 0;
-			x = 0;
-			
-			//dbg start	
-#ifdef _DEBUG
-			tick(); 	//restarts timer
-#endif
-			//dbg end
-		}
-	}	
-	closeFramebuffer();
-#ifdef _DEBUG
-	printf("total pics: %i, total time: %li average: %f\n", picsDrawn, totalMicroseconds, (float)totalMicroseconds/picsDrawn); 
-#endif
-	return 0;
-}
 
 void closeFramebuffer(void){
 
@@ -130,6 +77,7 @@ int openFramebuffer(void){
         }
 
         screensize = getScreensizeInByte(); 
+	allocateBuffer();
 	return 0;
 }
 
