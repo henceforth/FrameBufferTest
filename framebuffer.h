@@ -27,7 +27,8 @@ void closeFramebuffer();
 //misc
 int getGraphicMode();
 int getScreensizeInByte(void);
-
+int getMaxX();
+int getMaxY();
 
 #ifdef _DEBUG
 int printDebug(void);

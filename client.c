@@ -7,13 +7,17 @@
 #define XMAX 1024
 #define YMAX 768
 
+void openAll();
+void closeAll();
+
 int main(void){
 	
-	openFramebuffer();
-	openMouse();
 
-	signal(SIGINT, closeFramebuffer);
-	signal(SIGTERM, closeFramebuffer);
+	signal(SIGINT, closeAll);
+	signal(SIGTERM, closeAll);
+
+	openAll();
+
 	struct mouseMove* mmove;
 
 	int red = 0;
@@ -40,11 +44,8 @@ int main(void){
 		swapBuffers();
 		setTimer();
 		
-		int i = 0;
-		int j = 0;
 		for(i = 0; i < 10; i++)
 			for(j = 0; j < 10; j++){
-				
 				setPixel(x+i,y+j,red,green,blue);
 			}
 		
@@ -69,18 +70,28 @@ int main(void){
 			x += mmove->offsetX;
 			y -= mmove->offsetY;
 			if(x >= XMAX)
-				x = XMAX;
+				x = XMAX-1;
 			if(x < 0)
 				x = 0;
 			if(y >= YMAX)
-				y = YMAX;
+				y = YMAX-1;
 			if(y < 0)
 				y = 0;
 		}
 		free(mmove);
 	}
 	printDebug();
+	closeAll();
+	return 0;
+}
+
+void openAll(){
+	openFramebuffer();
+	openMouse();
+}
+
+void closeAll(){
 	closeFramebuffer();
 	closeMouse();
-	return 0;
+	exit(0);
 }

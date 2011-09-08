@@ -97,6 +97,14 @@ int openFramebuffer(void){
 	return 0;
 }
 
+int getMaxX(){
+	return vinfo.xres;
+}
+
+int getMaxY(){
+	return vinfo.yres;
+}
+
 int getScreensizeInByte(void){
 	return vinfo.xres * vinfo.yres * vinfo.bits_per_pixel / 8;  
 }
