@@ -19,7 +19,7 @@ struct mouseMove{
 };
 
 
-int openAndAllocateMouse(void);
+int openMouse(void);
 struct mouseMove* pollMouse(void);
 void closeMouse(void);
 

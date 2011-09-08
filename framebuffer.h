@@ -17,7 +17,7 @@ swapBuffer() malt das Bild
 closeFramebuffer() beendet die Session
 **/
 
-//#define _DEBUG
+#define _DEBUG
 //public access
 int openFramebuffer(void);
 int setPixel(int x, int y, int red, int blue, int green);

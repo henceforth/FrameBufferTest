@@ -28,10 +28,15 @@ void closeFramebuffer(void){
 			printf("failed to set text mode, errno: %i\n", errno);
 		}
 	}
-	munmap(fbp, screensize);
-	free(bgp);
-	close(fbfd);
-	close(tbfd);
+	
+	if(fbp != NULL)
+		munmap(fbp, screensize);
+	if(bgp != NULL)
+		free(bgp);
+	if(fbfd != 0)
+		close(fbfd);
+	if(tbfd != 0)
+		close(tbfd);
 }
 
 int getGraphicMode(){
@@ -44,6 +49,9 @@ int getGraphicMode(){
 }
 
 int setupGraphicsMode(void){
+	/**
+	switches to graphics mode
+	**/
 
 	if(ioctl(fbfd, KDSETMODE, 1) == -1){
 		printf("failed to set graphics mode\n");
@@ -55,7 +63,15 @@ int setupGraphicsMode(void){
 }
 
 int openFramebuffer(void){
-	setupGraphicsMode();
+	/**
+	switches to graphics moed
+	opens framebuffer handle
+	gets information
+	allocates buffers and maps framebuffer
+	**/
+	
+	//comment out to display dbg messages
+	//setupGraphicsMode();
 
 	/* Open the file for reading and writing */
         fbfd = open(VIDEO_DEVICE_FILE, O_RDWR);
@@ -95,6 +111,7 @@ int printDebug(void){
 	printf("Screen Information:\n");
 	printf("x resolution: %i\n", vinfo.xres);
 	printf("y resolution: %i\n", vinfo.yres);
+	printf("total pics: %i, total time: %li average: %f\n", picsDrawn, totalMicroseconds, (float)totalMicroseconds/picsDrawn); 
 	return 0;
 }
 
@@ -110,13 +127,13 @@ void tick(void){
 	}else{
 		totalMicroseconds += (end.tv_sec - start.tv_sec + ((end.tv_usec - start.tv_usec)>>6));
 	}
-	setTimer();	
+//	setTimer();	
 }
 #endif
 
 int allocateBuffer(){
         /* Map the device to memory */
-        fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);       
+        fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);  
         
 	if ((int)fbp == -1) { 
 		printf("Error: failed to map framebuffer device to memory.\n"); 

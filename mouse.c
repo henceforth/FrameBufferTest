@@ -18,7 +18,6 @@ struct mouseMove* processMouseInput(void){
 	mmove.offsetY = *(buffer+2);
 	int currentByte = *(buffer);
 	
-
 	if((currentByte & 1) != 0){
 		//left
 		mmove.buttonPressed = mmove.buttonPressed | LBUTTON; 
@@ -28,7 +27,6 @@ struct mouseMove* processMouseInput(void){
 	if((currentByte & 2) != 0){
 		//right
 		mmove.buttonPressed = mmove.buttonPressed | RBUTTON; 
-
 	}
 
 	if((currentByte & 4) != 0){
@@ -85,11 +83,25 @@ struct mouseMove* pollMouse(){
 	struct mouseMove* pMouse = NULL;
 	aio_ret = aio_read(&cb);
 
+	/**
+	mouse access
+	returns NULL on 
+	- reading in progress
+	- read error
+	- aio error
+
+	return mouseMove* on
+	-read success
+
+	**/
+
 	do{	
 		aio_ret = aio_error(&cb);
 		if(aio_ret == 0){ //read succesfull
 			break;
 		}else if(aio_ret == EINPROGRESS){ //read in progress
+			//return NULL;
+			continue;
 		}else{ //error
 			printf("read error!\n");
 			return NULL;
@@ -106,7 +118,7 @@ struct mouseMove* pollMouse(){
 	return pMouse;
 }
 
-int openAndAllocateMouse(void){
+int openMouse(void){
 	mfh = 0;
 	buffer = NULL;
 	
@@ -137,7 +149,9 @@ int openAndAllocateMouse(void){
 	return 0;
 }
 void closeMouse(void){
-	close(mfh);
-	free(buffer);
+	if(mfh > 0)
+		close(mfh);
+	if(buffer != NULL)
+		free(buffer);
 }
 

@@ -12,14 +12,14 @@ DEBUG_FLAGS = -g
 client: client.c mouse.o framebuffer.o 
 	${CC} ${FLAGS} ${GLOBAL_LINKS} -o ${OUTFILE} client.c *.o 
 
-%.c:
-	${CC} ${FLAGS} -o $@ -c $<
+%.o: %.c
+	${CC} ${FLAGS} -g -o $@ -c $<
 
 #remove output files
 clean:
 	rm -f *.o ${OUTFILE} 
 
-debug:
+debug: client.c mouse.o framebuffer.o
 	${CC} ${FLAGS} ${DEBUG_FLAGS} ${GLOBAL_LINKS} -o ${OUTFILE} client.c *.o 
 	gdb ${OUTFILE}
 
