@@ -20,6 +20,10 @@ all: framebuffer mouse clean
 #	${CC} ${GLOBAL_LINKS} ${FLAGS} -o ${FBOFILE} ${FBIFILE} 
 	echo "rebuild it all"
 
+#custom link lines
+final: clean
+	${CC} -Wall -o ${FBOFILE} ${FBIFILE}
+	${CC} -Wall -lrt -o ${MBOFILE} ${MBIFILE}
 
 #make all and run framebuffer
 run: all

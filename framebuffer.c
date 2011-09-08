@@ -10,15 +10,10 @@ static int fbfd;
 static char *fbp = 0;
 //mapped background buffer
 static char* bgp = 0;
-
-//dbg stuff
-static long int screensize = 0;
-static int picsDrawn = 0;
-static long int totalMicroseconds = 0;
-struct timeval start, end;
-//dbg end
+static long int screensize;
 
 int allocateBuffer();
+
 int main()
 {
         int x = 0, y = 0;
@@ -28,15 +23,17 @@ int main()
 	allocateBuffer();
 	
 	//dbg start
+#ifdef _DEBUG
 	printDebug();
 	setTimer();
+#endif
 	//dbg end
 
 	int i = 0;
 	for(i = 0; i < vinfo.xres; i++){
 		/* Figure out where in memory to put the pixel */
 		setPixel(x, y, red, green, blue);	
-		x += 1;
+		x++;
 		
 		if(x == vinfo.xres-1){
 			//x reached outter x
@@ -58,12 +55,16 @@ int main()
 			x = 0;
 			
 			//dbg start	
-			tick(); //restarts timer
+#ifdef _DEBUG
+			tick(); 	//restarts timer
+#endif
 			//dbg end
 		}
 	}	
 	closeFramebuffer();
+#ifdef _DEBUG
 	printf("total pics: %i, total time: %li average: %f\n", picsDrawn, totalMicroseconds, (float)totalMicroseconds/picsDrawn); 
+#endif
 	return 0;
 }
 
@@ -141,6 +142,7 @@ int swapBuffers(void){
 	
 }
 
+#ifdef _DEBUG
 int printDebug(void){
 	printf("Screen Information:\n");
 	printf("x resolution: %i\n", vinfo.xres);
@@ -162,6 +164,7 @@ void tick(void){
 	}
 	setTimer();	
 }
+#endif
 
 int allocateBuffer(){
         /* Map the device to memory */
