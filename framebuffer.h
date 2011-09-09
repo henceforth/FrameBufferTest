@@ -16,7 +16,7 @@ setPixel() schreibt Pixel an Screenaddresse x, y in farbe red, green, blue
 swapBuffer() malt das Bild
 closeFramebuffer() beendet die Session
 **/
-
+//#define _GMODE
 #define _DEBUG
 //public access
 int openFramebuffer(void);

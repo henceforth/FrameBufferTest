@@ -13,10 +13,10 @@ int main(void){
 
 	signal(SIGINT, closeAll);
 	signal(SIGTERM, closeAll);
-	const int XMAX = getMaxX();
-	const int YMAX = getMaxY();
 
 	openAll();
+	const int XMAX = getMaxX();
+	const int YMAX = getMaxY();
 
 	struct mouseMove* mmove;
 	int red = 0, green = 0, blue = 255;
@@ -36,15 +36,16 @@ int main(void){
 		swapBuffers();
 		setTimer();
 		
-		for(i = 0; i < 10; i++)
-			for(j = 0; j < 10; j++){
+		for(i = -5; i < 5; i++)
+			for(j = -5; j < 5; j++){
 				setPixel(x+i,y+j,red,green,blue);
 			}
 		
 		//mouse handling
 		mmove = pollMouse();
 		if(mmove == NULL){
-			usleep(10);
+			x = 0;
+			y = 0;
 			continue;
 		}
 
@@ -52,9 +53,9 @@ int main(void){
 			break;
 
 		if((mmove->buttonPressed & LBUTTON)){
-			blue -= 50;
-			if(blue <= 0)
-				blue = 255;
+			red -= 50;
+			if(red <= 0)
+				red = 255;
 		}
 
 		if(mmove->offsetX != 0 || mmove->offsetY != 0){

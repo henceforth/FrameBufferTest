@@ -69,9 +69,11 @@ int openFramebuffer(void){
 	gets information
 	allocates buffers and maps framebuffer
 	**/
-	
+
+#ifdef _GMODE
 	//comment out to display dbg messages
 	setupGraphicsMode();
+#endif
 
 	/* Open the file for reading and writing */
         fbfd = open(VIDEO_DEVICE_FILE, O_RDWR);
@@ -159,6 +161,10 @@ int allocateBuffer(){
 }
 
 int setPixel(x, y, red, blue, green){
+	//checks expensive, but prevent segfaults :-/
+	if(x < 0 || x >= vinfo.xres || y < 0 || y >= vinfo.yres) 
+		return -1;
+
 	long int location = (x * vinfo.bits_per_pixel/8) + (y * finfo.line_length);
 
 	/* layout: BGRA, strange endianess */
