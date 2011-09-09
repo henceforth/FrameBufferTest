@@ -1,18 +1,14 @@
 #include "framebuffer.h"
 #include "mouse.h"
-
 #include <signal.h>
-
-
 
 void openAll();
 void closeAll();
 
 int main(void){
-	
-
 	signal(SIGINT, closeAll);
 	signal(SIGTERM, closeAll);
+	signal(SIGSEGV, closeAll); //at least graphics mode needs to be switched off
 
 	openAll();
 	const int XMAX = getMaxX();
@@ -31,7 +27,9 @@ int main(void){
 	int x = XMAX/2, y = YMAX/2;
 	red = 0, green = 0, blue = 0;
 	setTimer();
-	while(1==1){
+
+	int run = 1;
+	while(run){
 		tick();
 		swapBuffers();
 		setTimer();
@@ -44,16 +42,14 @@ int main(void){
 		//mouse handling
 		mmove = pollMouse();
 		if(mmove == NULL){
-			x = 0;
-			y = 0;
 			continue;
 		}
 
 		if((mmove->buttonPressed & RBUTTON))
-			break;
+			run = 0;
 
 		if((mmove->buttonPressed & LBUTTON)){
-			red -= 50;
+			red -= 10;
 			if(red <= 0)
 				red = 255;
 		}

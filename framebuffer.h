@@ -20,7 +20,7 @@ closeFramebuffer() beendet die Session
 #define _DEBUG
 //public access
 int openFramebuffer(void);
-int setPixel(int x, int y, int red, int blue, int green);
+int setPixel(int x, int y, int red, int green, int blue) ;
 int swapBuffers(void);
 void closeFramebuffer();
 

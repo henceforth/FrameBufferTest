@@ -16,11 +16,9 @@ int allocateBuffer();
 
 
 void closeFramebuffer(void){
-
 	//get console device
 
 	int tbfd = open(CONSOLE_DEVICE_FILE, O_RDWR);
-
 	if(tbfd == -1){
 		printf("failed to open console device, error: %i\n", errno);
 	}else{	
@@ -71,7 +69,6 @@ int openFramebuffer(void){
 	**/
 
 #ifdef _GMODE
-	//comment out to display dbg messages
 	setupGraphicsMode();
 #endif
 
@@ -160,7 +157,7 @@ int allocateBuffer(){
 	return 0;
 }
 
-int setPixel(x, y, red, blue, green){
+int setPixel(x, y, red, green, blue){
 	//checks expensive, but prevent segfaults :-/
 	if(x < 0 || x >= vinfo.xres || y < 0 || y >= vinfo.yres) 
 		return -1;
