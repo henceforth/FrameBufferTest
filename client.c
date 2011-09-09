@@ -1,5 +1,6 @@
 #include "framebuffer.h"
 #include "mouse.h"
+#include "cache.h"
 #include <signal.h>
 
 void openAll();
@@ -77,10 +78,12 @@ int main(void){
 void openAll(){
 	openFramebuffer();
 	openMouse();
+	openCache(getScreensizeInByte());
 }
 
 void closeAll(){
 	closeFramebuffer();
 	closeMouse();
+	closeCache();
 	exit(0);//or the signal handler will return
 }
