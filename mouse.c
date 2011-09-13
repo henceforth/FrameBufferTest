@@ -16,7 +16,7 @@ struct mouseMove* processMouseInput(void){
 	mmove.buttonPressed = 0;
 	mmove.offsetX = *(buffer+1);
 	mmove.offsetY = *(buffer+2);
-	int currentByte = *(buffer);
+	int currentByte = *(buffer); //key press
 	
 	if((currentByte & 1) != 0){
 		//left

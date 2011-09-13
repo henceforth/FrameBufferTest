@@ -1,20 +1,23 @@
 #file stuff, for gcc, git, clean...
-DEPS = client.c mouse.o framebuffer.o cache.o
-CFILES = mouse.c framebuffer.c client.c cache.c
-HEADERFILES = mouse.h framebuffer.h client.h cache.h
+DEPS = client.c mouse.o framebuffer.o cache.o shapes.o
+CFILES = mouse.c framebuffer.c client.c cache.c shapes.c
+HEADERFILES = mouse.h framebuffer.h client.h cache.h shapes.h
 MISCFILES = Makefile #included in git
 OUTFILE = client
 
 #Compiler/Linker stuff
 GLOBAL_LINKS = -lrt 
-FLAGS = -Wall 
+FLAGS = -Wall  
 DEBUG_FLAGS = -g
 
-client: ${DEPS} 
+client: clean ${DEPS}  
 	${CC} ${FLAGS} ${GLOBAL_LINKS} -o ${OUTFILE} ${DEPS} 
 
 %.o: %.c
 	${CC} ${FLAGS} ${DEBUG_FLAGS} -o $@ -c $<
+
+run: client
+	./${OUTFILE} &> run_"`date +%s`".log
 
 #remove output files
 clean:

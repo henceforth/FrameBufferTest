@@ -3,18 +3,6 @@
 /**
 buffer cache
 
-struct cacheEntry{
-	int id;
-	char* start;
-	int length; 
-}
-
-static const SIZE; 
-volatile int status;
-#define STAUTS_FULL 2
-#define STATUS_OK 1
-#define STATUS_FAIL 0
-
 setup:
 int setup(void);
 bekommt groessenangabe CONST!
@@ -22,12 +10,10 @@ allokiert groesse 1x
 kein exit on fail, nimmt nur keine Aufträge an
 
 setCachellall stop:
-int setCache(ch
-bekommt pointer, große
+int setCache(char*)
+bekommt pointer 
 kopiert space@pointer:pointer+größe
-gibt identifier zurück (int)
-allokiert 2*aktuellenSpeicherCount
-aktuellerSpeicherCount += newSpeicherCount
+gibt identifier++ zurück (int)
 
 getCache:
 char* getCache(int);
@@ -60,12 +46,19 @@ int openCache(int ceSize){
 }
 
 int setCache(char* pointer){
-	if(status == STATUS_FAIL || status == STATUS_FULL){
+	/**
+	checks if storage is full
+	allocates memory of preset size
+	copies preset size to the buffer
+	saves it and returns an identifier
+	**/
+	if(status == STATUS_FAIL || status == STATUS_FULL || pointer == NULL){
 		printf("storage full or failed\n");
 		return -1;
 	}
 
 	if(numEntries == MAX_SIZE){
+		//yeah, paranoia
 		printf("storage full!\n");
 		status = STATUS_FULL;
 		return -1;
@@ -78,7 +71,7 @@ int setCache(char* pointer){
 	}
 
 	struct cacheEntry* centry = storage+numEntries;
-	centry->id = numEntries;
+	centry->id = numEntries++;
 	centry->start = tmp;
 	centry->length = cacheEntrySize;
 	memcpy(centry->start, pointer, cacheEntrySize);
@@ -86,15 +79,10 @@ int setCache(char* pointer){
 }
 
 char* getCache(int id){
-	if(status == STATUS_FAIL)
+	if(status == STATUS_FAIL || id >= numEntries || id < 0)
 		return NULL;
 
-	int i = 0;
-	for(i = 0; i < numEntries; i++){
-		if((storage+i)->id == id)
-			return (storage+i)->start;
-	}
-	return NULL;
+	return (char*)(storage+id)->start;	
 }
 
 void closeCache(){

@@ -1,5 +1,6 @@
 #include "framebuffer.h"
 
+
 //variable screen info
 static struct fb_var_screeninfo vinfo;
 //fixed screen info
@@ -10,14 +11,33 @@ static int fbfd;
 static char *fbp = 0;
 //mapped background buffer
 static char* bgp = 0;
+//screen size in byte
 static long int screensize;
-
+//flag to indicate need to update the framebuffer
+int needToRefresh;
+//setup function
 int allocateBuffer();
 
 
-void closeFramebuffer(void){
-	//get console device
+char* getCurrentBuffer(){
+	//for caching
+	return bgp;
+}
 
+int setBuffer(char* pointer){
+	//for caching
+	if(pointer == NULL)
+		return -1;
+
+	memcpy(bgp, pointer, screensize);
+	needToRefresh = 1;
+	return 0;
+}
+
+void closeFramebuffer(void){
+	//set down function
+
+	//get console device
 	int tbfd = open(CONSOLE_DEVICE_FILE, O_RDWR);
 	if(tbfd == -1){
 		printf("failed to open console device, error: %i\n", errno);
@@ -38,6 +58,7 @@ void closeFramebuffer(void){
 }
 
 int getGraphicMode(){
+	//get current display mode (text/graphic)
 	long int result = 0;
 	if(ioctl(fbfd, KDGETMODE, &result) != -1){
 		return result;
@@ -46,7 +67,7 @@ int getGraphicMode(){
 	
 }
 
-int setupGraphicsMode(void){
+int setupGraphicMode(void){
 	/**
 	switches to graphics mode
 	**/
@@ -68,12 +89,12 @@ int openFramebuffer(void){
 	allocates buffers and maps framebuffer
 	**/
 
-#ifdef _GMODE
-	setupGraphicsMode();
+#ifndef _DEBUG
+	setupGraphicMode();
 #endif
 
 	/* Open the file for reading and writing */
-        fbfd = open(VIDEO_DEVICE_FILE, O_RDWR);
+        fbfd = open(VIDEO_DEVICE_FILE, O_RDWR | O_APPEND);
         if (!fbfd) {
                 printf("Error: cannot open framebuffer device.\n");
                 exit(1);
@@ -92,6 +113,7 @@ int openFramebuffer(void){
         }
 
         screensize = getScreensizeInByte(); 
+	needToRefresh = 0;
 	allocateBuffer();
 	return 0;
 }
@@ -107,10 +129,17 @@ int getMaxY(){
 int getScreensizeInByte(void){
 	return vinfo.xres * vinfo.yres * vinfo.bits_per_pixel / 8;  
 }
+
 int swapBuffers(void){
-	memcpy(fbp, bgp, screensize);
+	//memcpy(fbp, bgp, screensize);
+	if(needToRefresh){
+		setTimer();
+		write(fbfd, bgp, screensize);
+		tick();
+	}
+	needToRefresh = 0;
+	lseek(fbfd, 0, SEEK_SET);
 	return 0;
-	
 }
 
 #ifdef _DEBUG
@@ -118,7 +147,7 @@ int printDebug(void){
 	printf("Screen Information:\n");
 	printf("x resolution: %i\n", vinfo.xres);
 	printf("y resolution: %i\n", vinfo.yres);
-	printf("total pics: %i, total time: %li average: %f\n", picsDrawn, totalMicroseconds, (float)totalMicroseconds/picsDrawn); 
+	printf("total ticks: %i, total time: %li average: %f, ticks/second: %li\n", picsDrawn, totalMicroseconds, (float)totalMicroseconds/picsDrawn, (totalMicroseconds>>6)/picsDrawn); 
 	return 0;
 }
 
@@ -134,7 +163,10 @@ void tick(void){
 	}else{
 		totalMicroseconds += (end.tv_sec - start.tv_sec + ((end.tv_usec - start.tv_usec)>>6));
 	}
-//	setTimer();	
+}
+
+void printTimes(void){
+	printf("last tick took %li seconds and %li microseconds\n", end.tv_sec - start.tv_sec, end.tv_usec - start.tv_usec);
 }
 #endif
 
@@ -156,21 +188,28 @@ int allocateBuffer(){
 	}
 	return 0;
 }
-
+long int location;
 int setPixel(x, y, red, green, blue){
 	//checks expensive, but prevent segfaults :-/
 	if(x < 0 || x >= vinfo.xres || y < 0 || y >= vinfo.yres) 
 		return -1;
 
-	long int location = (x * vinfo.bits_per_pixel/8) + (y * finfo.line_length);
-
-	/* layout: BGRA, strange endianess */
-	/* write to background buffer */
+	location = (x * vinfo.bits_per_pixel/8) + (y * finfo.line_length);
+	needToRefresh = 1;
+/**	
 	*(bgp + location) = blue;	
 	*(bgp + location + 1) = green; 
 	*(bgp + location + 2) = red;  
 	*(bgp + location + 3) = 0;   
-	
+**/	
+
+	//DO NOT FUCK WITH THIS CODE
+	char tmp[4];
+	tmp[0] = blue;
+	tmp[1] = green;
+	tmp[2] = red;
+	tmp[3] = 0;
+	memcpy(bgp+location, tmp, sizeof(tmp));
 	return 0;
 }
 

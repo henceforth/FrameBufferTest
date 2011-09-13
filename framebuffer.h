@@ -16,7 +16,7 @@ setPixel() schreibt Pixel an Screenaddresse x, y in farbe red, green, blue
 swapBuffer() malt das Bild
 closeFramebuffer() beendet die Session
 **/
-//#define _GMODE
+
 #define _DEBUG
 //public access
 int openFramebuffer(void);
@@ -29,11 +29,14 @@ int getGraphicMode();
 int getScreensizeInByte(void);
 int getMaxX();
 int getMaxY();
+char* getCurrentBuffer();
+int setBuffer(char*);
 
 #ifdef _DEBUG
 int printDebug(void);
 void tick(void);
 void setTimer(void);
+void printTimes(void);
 
 int picsDrawn;
 long int totalMicroseconds;

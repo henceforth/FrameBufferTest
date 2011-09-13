@@ -1,10 +1,33 @@
 #include "framebuffer.h"
 #include "mouse.h"
 #include "cache.h"
+#include "shapes.h"
 #include <signal.h>
 
 void openAll();
 void closeAll();
+
+int drawRectangle(int x, int y, int h, int w, int red, int green, int blue){
+//simple rectangle	
+	int j = 0;
+	int i = 0;
+
+	struct shapeRect r1;
+	r1.x = x;
+	r1.y = y;
+	r1.h = h;
+	r1.w = w;
+	r1.red = red;
+	r1.green = green;
+	r1.blue = blue;
+
+	for(j = 0; j< h; j++){
+		for(i = 0; i < w; i++){
+			setPixel(x+j, y+i, red, green, blue);
+		}
+	}
+	return 0;
+}
 
 int main(void){
 	signal(SIGINT, closeAll);
@@ -17,48 +40,47 @@ int main(void){
 
 	struct mouseMove* mmove;
 	int red = 0, green = 0, blue = 255;
-	int j = 0, i = 0;
+	
+	drawRectangle(0, 0, XMAX, YMAX, red, green, blue);
 
-	for(j = 0; j< XMAX; j++){
-		for(i = 0; i < YMAX; i++){
-			setPixel(j, i, red, green, blue);
-		}
-	}
+	int bid = -1;
+	//store background image (w/o cursor)
+	bid = setCache(getCurrentBuffer());
 
 	int x = XMAX/2, y = YMAX/2;
-	red = 0, green = 0, blue = 0;
-	setTimer();
-
+	red = 255, green = 255, blue = 255;
 	int run = 1;
+
 	while(run){
-		tick();
+		//setTimer();
 		swapBuffers();
-		setTimer();
-		
-		for(i = -5; i < 5; i++)
-			for(j = -5; j < 5; j++){
-				setPixel(x+i,y+j,red,green,blue);
-			}
-		
+		//tick();
+
 		//mouse handling
 		mmove = pollMouse();
 		if(mmove == NULL){
 			continue;
 		}
+		
+		//set background
+		setBuffer(getCache(bid));
 
-		if((mmove->buttonPressed & RBUTTON))
+		//cursor	
+		drawRectangle(x, y, 10, 10, red, green, blue);
+		if(mmove->buttonPressed & RBUTTON)
 			run = 0;
 
-		if((mmove->buttonPressed & LBUTTON)){
-			red -= 10;
-			if(red <= 0)
-				red = 255;
+		if(mmove->buttonPressed & LBUTTON){
+			red = 255-red;
+			blue = 255-blue;
+			green = 255-green;
 		}
+
 
 		if(mmove->offsetX != 0 || mmove->offsetY != 0){
 			//inverted axis
-			x += mmove->offsetX;
-			y -= mmove->offsetY;
+			x += mmove->offsetX*2;
+			y -= mmove->offsetY*2;
 			if(x >= XMAX)
 				x = XMAX-1;
 			if(x < 0)
@@ -70,7 +92,9 @@ int main(void){
 		}
 		free(mmove);
 	}
+#ifdef _DEBUG
 	printDebug();
+#endif
 	closeAll();
 	return 0;
 }
