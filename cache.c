@@ -5,13 +5,11 @@ buffer cache
 
 setup:
 int setup(void);
-bekommt groessenangabe CONST!
-allokiert groesse 1x
+allokiert volles array an cacheEntry Einträgen
 kein exit on fail, nimmt nur keine Aufträge an
 
-setCachellall stop:
-int setCache(char*)
-bekommt pointer 
+int setCache(char*, int)
+bekommt pointer, größe
 kopiert space@pointer:pointer+größe
 gibt identifier++ zurück (int)
 
@@ -27,9 +25,8 @@ free(cache)
 
 **/
 
-int openCache(int ceSize){
+int openCache(void){
 	numEntries = 0;
-	cacheEntrySize = ceSize;	
 
 	//allocate a full array of cache entries
 	storage = (struct cacheEntry*)malloc(sizeof(struct cacheEntry)*MAX_SIZE);
@@ -45,7 +42,7 @@ int openCache(int ceSize){
 	return 0;
 }
 
-int setCache(char* pointer){
+int setCache(char* pointer, int iLength){
 	/**
 	checks if storage is full
 	allocates memory of preset size
@@ -64,7 +61,7 @@ int setCache(char* pointer){
 		return -1;
 	}
 	
-	char* tmp = (char*)malloc(cacheEntrySize);
+	char* tmp = (char*)malloc(iLength);
 	if(tmp == NULL){
 		printf("no space to allocate for entry\n");
 		return -2;
@@ -73,8 +70,8 @@ int setCache(char* pointer){
 	struct cacheEntry* centry = storage+numEntries;
 	centry->id = numEntries++;
 	centry->start = tmp;
-	centry->length = cacheEntrySize;
-	memcpy(centry->start, pointer, cacheEntrySize);
+	centry->length = iLength;
+	memcpy(centry->start, pointer, iLength);
 	return centry->id;
 }
 

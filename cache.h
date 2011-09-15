@@ -4,12 +4,12 @@ cache.h basic cache interface
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-int openCache(int);
-int setCache(char*);
+int openCache(void);
+int setCache(char*, int);
 char* getCache(int);
 void closeCache(void);
 
-#define MAX_SIZE 10
+#define MAX_SIZE 100
 #define FREE -1
 #define STATUS_FAIL 0
 #define STATUS_FULL 2
