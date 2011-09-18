@@ -133,9 +133,13 @@ int getScreensizeInByte(void){
 int swapBuffers(void){
 	//memcpy(fbp, bgp, screensize);
 	if(needToRefresh){
+#ifdef _DEBUG
 		setTimer();
+#endif
 		write(fbfd, bgp, screensize);
+#ifdef _DEBUG
 		tick();
+#endif
 	}
 	needToRefresh = 0;
 	lseek(fbfd, 0, SEEK_SET);
@@ -203,7 +207,6 @@ int setPixel(x, y, red, green, blue){
 	*(bgp + location + 3) = 0;   
 **/	
 
-	//DO NOT FUCK WITH THIS CODE
 	char tmp[4];
 	tmp[0] = blue;
 	tmp[1] = green;

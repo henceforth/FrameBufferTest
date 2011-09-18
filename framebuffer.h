@@ -32,12 +32,12 @@ int getMaxY();
 char* getCurrentBuffer();
 int setBuffer(char*);
 
-#ifdef _DEBUG
 int printDebug(void);
 void tick(void);
 void setTimer(void);
 void printTimes(void);
 
+#ifdef _DEBUG
 int picsDrawn;
 long int totalMicroseconds;
 struct timeval start, end;

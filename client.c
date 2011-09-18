@@ -9,6 +9,7 @@ void closeAll();
 
 int drawnRectangles[100];
 int numRectangles;
+int cacheStale;
 
 int drawRectangle(int x, int y, int h, int w, int red, int green, int blue, int cache){
 	//simple rectangle	
@@ -26,8 +27,10 @@ int drawRectangle(int x, int y, int h, int w, int red, int green, int blue, int 
 
 		//Either cache and draw later
 		j = setCache((char*)&r1, sizeof(struct shapeRect));
-		if(j >= 0)
+		if(j >= 0){
 			drawnRectangles[numRectangles++] = j;
+			cacheStale = 1;
+		}
 	}else{
 		//or draw directly and dont cache at all
 		int i = 0;
@@ -39,16 +42,42 @@ int drawRectangle(int x, int y, int h, int w, int red, int green, int blue, int 
 	}
 	return 0;
 }
-
+int lastRendered;
 int renderRectangle(void){
 	if(numRectangles == 0)
 		return 0;
+	//check if pics need to be rendered
+	if(cacheStale == 0){
+		if(lastRendered != 0){
+			//if not and there is a cache entry, just set that
+			char* rendered = getCache(lastRendered);
+			if(rendered != NULL)
+				setBuffer(rendered);
+		}
+	}else{
+		//else just draw all rectangles and save the entry
+		int i = 0;
+		struct shapeRect* r1;
+		for(i = 0; i < numRectangles; i++){
+			r1 = (struct shapeRect*) getCache(drawnRectangles[i]);
+			if(r1 != NULL)
+				drawRectangle(r1->x, r1->y, r1->h, r1->w, r1->red, r1->green, r1->blue, 0);
+		}
+		lastRendered = setCache(getCurrentBuffer(), getScreensizeInByte());
+	}
+	return 0;
+}
+
+
+int drawGrid(void){
 	int i = 0;
-	struct shapeRect* r1;
-	for(i = 0; i < numRectangles; i++){
-		r1 = (struct shapeRect*) getCache(drawnRectangles[i]);
-		if(r1 != NULL)
-			drawRectangle(r1->x, r1->y, r1->h, r1->w, r1->red, r1->green, r1->blue, 0);
+	
+	for(i = 0; i < getMaxX(); i+=50){
+		drawRectangle(i, 0, 1, getMaxY(), 0, 0, 0, 1);
+	}
+
+	for(i = 0; i < getMaxY(); i+=50){
+		drawRectangle(1, i, getMaxX(), 1, 0, 0, 0, 1);
 	}
 	return 0;
 }
@@ -74,12 +103,12 @@ int main(void){
 	int x = XMAX/2, y = YMAX/2;
 	red = 255, green = 255, blue = 255;
 	int run = 1;
-
+	drawGrid();
 	while(run){
-		setTimer();
+	//	setTimer();
 		renderRectangle();
 		swapBuffers();
-		tick();
+	//	tick();
 
 		//mouse handling
 		mmove = pollMouse();
@@ -92,9 +121,13 @@ int main(void){
 		
 		//cursor movement	
 		if(mmove->offsetX != 0 || mmove->offsetY != 0){
+			//trying to smoothen mouse mouvement
+			if(abs(mmove->offsetX) >= 2) 
+				x += mmove->offsetX*2;
 			//inverted axis
-			x += mmove->offsetX*2;
-			y -= mmove->offsetY*2;
+			if(abs(mmove->offsetY) >= 2)
+				y -= mmove->offsetY*2;
+
 			if(x >= XMAX)
 				x = XMAX-1;
 			if(x < 0)
@@ -111,7 +144,7 @@ int main(void){
 			run = 0;
 
 		if(mmove->buttonPressed & LBUTTON){
-			//gets just cached
+			//just cached
 			drawRectangle(x, y, 30, 30, 0, 255, 0, 1);
 		}
 

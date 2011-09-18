@@ -9,7 +9,8 @@ int setCache(char*, int);
 char* getCache(int);
 void closeCache(void);
 
-#define MAX_SIZE 100
+//max elements, not size
+#define MAX_SIZE 1000
 #define FREE -1
 #define STATUS_FAIL 0
 #define STATUS_FULL 2
